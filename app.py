@@ -3,8 +3,9 @@ import openai
 import os
 import datetime
 
-# ✅ OpenAI 키를 환경변수에서 가져오기 (Secrets 사용 권장)
+# ✅ OpenAI 키를 환경변수에서 가져오기
 openai.api_key = os.getenv("OPENAI_API_KEY")
+client = openai.OpenAI(api_key=openai.api_key)
 
 # ✅ 페이지 기본 설정
 st.set_page_config(page_title="AI 여행 플래너", page_icon="🌍")
@@ -41,22 +42,18 @@ if st.sidebar.button("✈️ 여행 일정 추천받기"):
         일정은 이동 동선이 자연스럽게 연결되도록 구성해주세요.
         """
 
-        from openai import OpenAI
-client = OpenAI(api_key=openai.api_key)
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "당신은 여행 일정을 짜주는 전문가입니다."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.7,
+            max_tokens=1000
+        )
 
-response = client.chat.completions.create(
-    model="gpt-3.5-turbo",
-    messages=[
-        {"role": "system", "content": "당신은 여행 일정을 짜주는 전문가입니다."},
-        {"role": "user", "content": prompt}
-    ],
-    temperature=0.7,
-    max_tokens=1000
-)
+        result = response.choices[0].message.content
 
-result = response.choices[0].message.content
-
-        # ✅ 장소 추출 및 지도 링크 생성
         def extract_place_names(text):
             lines = text.split('\n')
             places = []
