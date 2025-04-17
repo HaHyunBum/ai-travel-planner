@@ -47,7 +47,7 @@ with st.expander("🎨 여행 분위기 / 음식 / 예산 설정"):
 if st.button("✈️ AI에게 추천받기"):
     st.success("AI가 취향 기반 맞춤 일정을 생성 중입니다...")
     st.markdown("##### 예시 📍")
-    st.markdown("1일차
+    st.markdown("1일차")
 - 아침: 감천문화마을 산책
 - 점심: 부산국밥 거리
 - 카페: 해운대 루프탑
