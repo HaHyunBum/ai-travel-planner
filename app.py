@@ -140,47 +140,21 @@ if st.button("✈️ AI에게 추천받기"):
             st.success("✅ AI 추천 일정 생성 완료!")
             st.markdown("### 예시 📍")
             st.markdown(result)
+
+            # 네이버 지도 링크 강조
+            st.markdown("
+### 🗺️ 네이버 지도로 장소 검색하기")
+            for line in result.split('
+'):
+                if any(keyword in line for keyword in ["장소명", "- ", "* "]):
+                    parts = line.split(":")
+                    if len(parts) > 1:
+                        place = parts[1].strip()
+                        encoded = urllib.parse.quote(place)
+                        link = f"https://map.naver.com/v5/search/{encoded}"
+                        st.markdown(f"🔗 [{place} 네이버 지도 검색 링크]({link})")
             st.write("🧪 GPT 결과 확인:", result)
 
-            with st.expander("🗺️ 전체 경로 지도 보기", expanded=False):
-                st.info("카카오 API를 활용해 장소를 지도에 자동 표시합니다.")
-                locations = []
-                for line in result.split('\n'):
-                    st.write("🔍 분석 중:", line)
-                    if any(keyword in line for keyword in ["장소명", "- ", "* "]):  # 다양한 형식 대응
-                        parts = line.split(":")
-                        if len(parts) > 1:
-                            place = parts[1].strip()
-                            st.write("📌 인식된 장소명:", place)
-                            coord = get_coordinates_from_kakao(place)
-                            if coord:
-                                locations.append((place, coord))
-                if locations:
-                    m = folium.Map(location=locations[0][1], zoom_start=13)
-                    for name, (lat, lon) in locations:
-                        # 장소 유형 자동 분류 + 아이콘
-                        if any(keyword in name for keyword in ["호텔", "모텔", "게스트하우스", "숙소", "에어비앤비"]):
-                            icon_color = "blue"
-                            icon_emoji = "🏨 "
-                        elif any(keyword in name for keyword in ["카페", "커피"]):
-                            icon_color = "lightgray"
-                            icon_emoji = "☕ "
-                        elif any(keyword in name for keyword in ["식당", "맛집", "포차", "고깃집", "횟집", "분식"]):
-                            icon_color = "red"
-                            icon_emoji = "🍽 "
-                        elif any(keyword in name for keyword in ["공원", "박물관", "전시관", "시장", "마을", "해변", "공연"]):
-                            icon_color = "green"
-                            icon_emoji = "📍 "
-                        else:
-                            icon_color = "orange"
-                            icon_emoji = "📌 "
-
-                        folium.Marker(
-                            location=[lat, lon],
-                            popup=icon_emoji + name,
-                            icon=folium.Icon(color=icon_color)
-                        ).add_to(m)
-                    folium.PolyLine([coord for _, coord in locations], color="blue").add_to(m)
-                    st_folium(m, width=700)
+            
         except Exception as e:
             st.error(f"⚠️ 오류 발생: {str(e)}")
