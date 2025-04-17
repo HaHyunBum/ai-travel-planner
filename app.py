@@ -101,9 +101,7 @@ if st.sidebar.button("✈️ 여행 일정 추천받기") or st.session_state.ge
         for block in day_blocks:
             if block.strip():
                 with st.expander(block.split('\n')[0].strip(), expanded=True):
-                    st.markdown(f"```
-{block.strip()}
-```)  ")
+                    st.code(block.strip())
 
         # ✅ 사용자 피드백 UI → 일정 아래 바로
         with st.container():
