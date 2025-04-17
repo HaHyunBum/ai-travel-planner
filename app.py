@@ -6,8 +6,6 @@ import urllib.parse
 import requests
 import plotly.graph_objects as go
 import json
-import qrcode
-from io import BytesIO
 from urllib.parse import urlencode
 
 # 전역 설정
@@ -25,13 +23,6 @@ def generate_prompt(city, date, days, companion, vibe, food, budget, people):
     아침, 점심, 카페, 저녁, 야경 형식으로 작성하고 각 장소는 한 줄 설명 포함해주세요.
     여행 도시: {city}, 동행: {companion}, 인원: {people}, 분위기: {', '.join(vibe)}, 음식: {', '.join(food)}, 예산: {budget}
     """
-
-def make_qr_code(link):
-    qr = qrcode.make(link)
-    buf = BytesIO()
-    qr.save(buf)
-    buf.seek(0)
-    return buf
 
 st.set_page_config(page_title="AI 여행 플래너", page_icon="🌍", layout="wide")
 st.markdown("""
@@ -56,7 +47,8 @@ budget = query_params.get("budget", ["100000"])[0]
 col1, col2, col3 = st.columns([2, 1, 1])
 
 with col1:
-    travel_city = st.text_input("여행 도시는 어디인가요?", travel_city)
+    travel_city = st.text_input("여행 도시는 어디인가요? (예: 서울, 부산, 제주 등)", travel_city)
+    st.caption("\n\n추천 여행지: 서울, 부산, 제주, 강릉, 전주 등")
 
 with col2:
     travel_date = st.date_input("여행 날짜는 언제인가요?", travel_date)
@@ -104,20 +96,6 @@ if st.button("✈️ AI에게 추천받기"):
         st.markdown("---")
         st.subheader("📋 AI 추천 여행 일정")
         st.markdown(schedule_text)
-
-        st.markdown("---")
-        st.subheader("📎 공유 링크 및 QR 코드")
-        params = urlencode({"city": travel_city, "date": travel_date, "days": trip_days, "with": companion})
-        share_str = f"https://{st.request.url.split('?')[0]}?{params}"
-        qr_buf = make_qr_code(share_str)
-        st.image(qr_buf.getvalue(), caption="QR 코드로 공유하기")
-        st.markdown(f"🔗 [공유 링크 바로가기]({share_str})")
-
-        st.markdown("---")
-        st.subheader("👍 일정이 마음에 드시나요?")
-        if st.button("❤️ 좋아요! 저장하기") and FIREBASE_URL:
-            requests.post(FIREBASE_URL, json={"city": travel_city, "date": str(travel_date), "schedule": schedule_text})
-            st.success("✅ Firebase에 저장 완료")
 
     except Exception as e:
         st.error(f"⚠️ 오류 발생: {str(e)}")
