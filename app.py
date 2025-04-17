@@ -6,6 +6,9 @@ import urllib.parse
 import requests
 import plotly.graph_objects as go
 import json
+import qrcode
+from io import BytesIO
+from fpdf import FPDF
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
 client = openai.OpenAI(api_key=openai.api_key)
@@ -61,6 +64,19 @@ if st.sidebar.button("✈️ 여행 일정 추천받기"):
             user_inputs[sec] = st.text_input(f"{sec} 장소 입력", value=f"{travel_city} 대표 {sec} 장소")
 
         st.markdown("---")
+        st.subheader("🖼️ 장소별 이미지 불러오기")
+        for sec in sections:
+            search = f"{user_inputs[sec]} {travel_city}"
+            img_url = f"https://source.unsplash.com/featured/?{urllib.parse.quote(search)}"
+            st.image(img_url, caption=f"{sec}: {user_inputs[sec]}", use_column_width=True)
+
+        st.markdown("---")
+        st.subheader("🗺️ Google Static Maps로 위치 시각화")
+        for sec in sections:
+            map_url = f"https://maps.googleapis.com/maps/api/staticmap?center={urllib.parse.quote(user_inputs[sec])}&zoom=15&size=600x300&markers=color:red%7C{urllib.parse.quote(user_inputs[sec])}&key={GOOGLE_API_KEY}"
+            st.image(map_url, caption=f"{sec} 위치", use_column_width=True)
+
+        st.markdown("---")
         st.subheader("🧭 거리 기반 동선 최적화")
         if GOOGLE_API_KEY:
             places = list(user_inputs.values())
@@ -98,5 +114,27 @@ if st.sidebar.button("✈️ 여행 일정 추천받기"):
         st.subheader("📥 일정 .txt 파일로 다운로드")
         text_data = "\n".join([f"{k}: {v}" for k, v in user_inputs.items()])
         st.download_button("📄 일정 텍스트 다운로드", text_data, file_name="itinerary.txt")
+
+        st.markdown("---")
+        st.subheader("📎 공유 링크 및 QR 코드")
+        share_url = st.experimental_get_query_params()
+        share_str = f"https://{st.runtime.scriptrunner.script_run_context().script_name}?city={travel_city}&date={travel_date}&days={trip_days}&with={companion}"
+        qr = qrcode.make(share_str)
+        buf = BytesIO()
+        qr.save(buf)
+        st.image(buf.getvalue(), caption="QR 코드로 공유하기")
+        st.markdown(f"🔗 [공유 링크 바로가기]({share_str})")
+
+        st.markdown("---")
+        st.subheader("🖨️ PDF로 일정 저장하기")
+        pdf = FPDF()
+        pdf.add_page()
+        pdf.set_font("Arial", size=12)
+        pdf.cell(200, 10, txt="AI 여행 일정 추천기", ln=True, align="C")
+        for sec in sections:
+            pdf.cell(200, 10, txt=f"{sec}: {user_inputs[sec]}", ln=True)
+        pdf_output = BytesIO()
+        pdf.output(pdf_output)
+        st.download_button("📄 PDF 다운로드", pdf_output.getvalue(), file_name="itinerary.pdf")
 
         st.success("✅ 모든 기능이 반영되었습니다!")
