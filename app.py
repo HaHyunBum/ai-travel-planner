@@ -33,8 +33,16 @@ def make_qr_code(link):
     buf.seek(0)
     return buf
 
-st.set_page_config(page_title="AI 여행 플래너", page_icon="🌍")
-st.title("🌍 AI 여행 일정 추천기")
+st.set_page_config(page_title="AI 여행 플래너", page_icon="🌍", layout="wide")
+st.markdown("""
+    <style>
+    .big-title { font-size: 36px !important; font-weight: 700; }
+    .subtitle { font-size: 20px; color: gray; margin-top: -20px; }
+    </style>
+""", unsafe_allow_html=True)
+
+st.markdown("<div class='big-title'>🌍 여행지를 알려주세요</div>", unsafe_allow_html=True)
+st.markdown("<div class='subtitle'>AI가 자동으로 여행 코스를 추천해드립니다</div>", unsafe_allow_html=True)
 
 query_params = st.query_params
 travel_city = query_params.get("city", ["서울"])[0]
@@ -45,31 +53,40 @@ vibe = query_params.get("vibe", [])
 food = query_params.get("food", [])
 budget = query_params.get("budget", ["100000"])[0]
 
-st.sidebar.header("📌 여행 조건 입력")
-travel_city = st.sidebar.text_input("여행 도시는?", travel_city, help="원하는 도시를 검색하세요.")
-travel_date = st.sidebar.date_input("여행 날짜는?", travel_date)
-trip_days_label = st.sidebar.selectbox("여행 일수는?", ["당일치기", "1박2일", "2박3일", "3박4일", "4박5일"], index=trip_days - 1)
-trip_days = int(trip_days_label[0]) if trip_days_label != "당일치기" else 1
+col1, col2, col3 = st.columns([2, 1, 1])
 
-st.sidebar.markdown("### 동행 인원 수")
-adult = st.sidebar.number_input("성인", min_value=0, max_value=10, value=1, step=1)
-kids = st.sidebar.number_input("어린이", min_value=0, max_value=10, step=1)
-babies = st.sidebar.number_input("유아", min_value=0, max_value=10, step=1)
-pets = st.sidebar.checkbox("반려동물 동반")
+with col1:
+    travel_city = st.text_input("여행 도시는 어디인가요?", travel_city)
+
+with col2:
+    travel_date = st.date_input("여행 날짜는 언제인가요?", travel_date)
+
+with col3:
+    trip_days_label = st.selectbox("여행 일수는?", ["당일치기", "1박2일", "2박3일", "3박4일", "4박5일"], index=trip_days - 1)
+    trip_days = int(trip_days_label[0]) if trip_days_label != "당일치기" else 1
+
+st.markdown("---")
+
+st.subheader("👥 동행 인원 구성")
+cols = st.columns(4)
+adult = cols[0].number_input("성인", min_value=0, max_value=10, value=1, step=1)
+kids = cols[1].number_input("어린이", min_value=0, max_value=10, step=1)
+babies = cols[2].number_input("유아", min_value=0, max_value=10, step=1)
+pets = cols[3].checkbox("반려동물 포함")
 people = f"성인 {adult}, 어린이 {kids}, 유아 {babies}, 반려동물 {'있음' if pets else '없음'}"
 
-companion = st.sidebar.selectbox("동행 유형은?", ["혼자", "커플", "가족", "친구"], index=["혼자", "커플", "가족", "친구"].index(companion))
+companion = st.selectbox("동행 유형은?", ["혼자", "커플", "가족", "친구"], index=["혼자", "커플", "가족", "친구"].index(companion))
 
-with st.sidebar.expander("여행 분위기 선택"):
+with st.expander("🎨 여행 분위기 선택"):
     vibe = st.multiselect("여행 분위기?", ["힐링", "핫플", "감성", "자연", "가성비", "로맨틱", "모험", "역사", "맛집", "휴양", "문화", "레저"], default=vibe)
 
-with st.sidebar.expander("음식 취향 선택"):
+with st.expander("🍽️ 음식 취향 선택"):
     food = st.multiselect("음식 취향은?", ["한식", "양식", "디저트", "채식", "분식", "일식", "중식", "고기", "해산물", "패스트푸드", "아시아", "퓨전"], default=food)
 
-with st.sidebar.expander("예산 설정"):
+with st.expander("💸 예산 설정"):
     budget = st.slider("예산은? (KRW)", 0, 10000000, int(budget), step=1000)
 
-if st.sidebar.button("✈️ 여행 일정 추천받기"):
+if st.button("✈️ AI에게 추천받기"):
     try:
         with st.spinner("AI가 여행 일정을 생성 중입니다..."):
             prompt = generate_prompt(travel_city, travel_date, trip_days, companion, vibe, food, budget, people)
@@ -84,9 +101,9 @@ if st.sidebar.button("✈️ 여행 일정 추천받기"):
             )
             schedule_text = response.choices[0].message.content
 
-        st.subheader("🗓️ 추천 일정")
-        with st.expander("자세히 보기"):
-            st.markdown(schedule_text)
+        st.markdown("---")
+        st.subheader("📋 AI 추천 여행 일정")
+        st.markdown(schedule_text)
 
         st.markdown("---")
         st.subheader("📎 공유 링크 및 QR 코드")
