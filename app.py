@@ -100,10 +100,21 @@ if st.sidebar.button("✈️ 여행 일정 추천받기") or st.session_state.ge
         day_blocks = re.split(r"(?=Day [0-9]+)", result)
         for block in day_blocks:
             if block.strip():
-                with st.expander(block.split('\n')[0].strip()):
+                with st.expander(block.split('\n')[0].strip(), expanded=True):
                     st.markdown(f"```
 {block.strip()}
 ```)  ")
+
+        # ✅ 사용자 피드백 UI → 일정 아래 바로
+        with st.container():
+            st.markdown("### 🙌 일정이 마음에 드시나요?")
+            col1, col2 = st.columns([1, 1])
+            with col1:
+                if st.button("👍 좋아요! 일정 마음에 들어요"):
+                    st.success("감사합니다! 마음에 드셨다니 기뻐요 😊")
+            with col2:
+                if st.button("🔄 다른 추천 일정 보기"):
+                    st.experimental_rerun()
 
         st.subheader("🖼️ 장소별 이미지 + 요약")
         for place, img in image_urls:
@@ -122,14 +133,3 @@ if st.sidebar.button("✈️ 여행 일정 추천받기") or st.session_state.ge
             file_name=f"{travel_city}_{travel_date}_여행일정.txt",
             mime="text/plain"
         )
-
-        # ✅ 사용자 피드백
-        st.markdown("---")
-        st.markdown("### 😊 이 일정이 마음에 드시나요?")
-        col1, col2 = st.columns(2)
-        with col1:
-            if st.button("👍 마음에 들어요!"):
-                st.success("감사합니다! 마음에 드셨다니 기뻐요 😊")
-        with col2:
-            if st.button("🔁 다시 생성하기"):
-                st.experimental_rerun()
