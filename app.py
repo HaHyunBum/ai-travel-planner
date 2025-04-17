@@ -87,4 +87,16 @@ if st.sidebar.button("✈️ 여행 일정 추천받기"):
         fig.update_layout(barmode='stack', height=300, showlegend=True)
         st.plotly_chart(fig, use_container_width=True)
 
+        st.markdown("---")
+        st.subheader("👍 일정이 마음에 드시나요?")
+        if st.button("❤️ 좋아요! 일정 마음에 들어요"):
+            if FIREBASE_URL:
+                requests.post(FIREBASE_URL, json={"city": travel_city, "date": str(travel_date), "schedule": user_inputs})
+                st.success("Firebase에 일정이 저장되었습니다!")
+
+        st.markdown("---")
+        st.subheader("📥 일정 .txt 파일로 다운로드")
+        text_data = "\n".join([f"{k}: {v}" for k, v in user_inputs.items()])
+        st.download_button("📄 일정 텍스트 다운로드", text_data, file_name="itinerary.txt")
+
         st.success("✅ 모든 기능이 반영되었습니다!")
