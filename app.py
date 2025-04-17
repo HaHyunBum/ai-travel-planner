@@ -145,11 +145,13 @@ if st.button("✈️ AI에게 추천받기"):
                 st.info("카카오 API를 활용해 장소를 지도에 자동 표시합니다.")
                 locations = []
                 for line in result.split('\n'):
-                    if line.startswith("- 장소명:"):
-                        place = line.split(":")[1].strip()
-                        coord = get_coordinates_from_kakao(place)
-                        if coord:
-                            locations.append((place, coord))
+                    if any(keyword in line for keyword in ["장소명", "- ", "* "]):  # 다양한 형식 대응
+                        parts = line.split(":")
+                        if len(parts) > 1:
+                            place = parts[1].strip()
+                            coord = get_coordinates_from_kakao(place)
+                            if coord:
+                                locations.append((place, coord))
                 if locations:
                     m = folium.Map(location=locations[0][1], zoom_start=13)
                     for name, (lat, lon) in locations:
