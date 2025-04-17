@@ -140,15 +140,19 @@ if st.button("✈️ AI에게 추천받기"):
             st.success("✅ AI 추천 일정 생성 완료!")
             st.markdown("### 예시 📍")
             st.markdown(result)
+            st.write("🧪 GPT 결과 확인:", result)
 
             with st.expander("🗺️ 전체 경로 지도 보기", expanded=False):
                 st.info("카카오 API를 활용해 장소를 지도에 자동 표시합니다.")
                 locations = []
-                for line in result.split('\n'):
+                for line in result.split('
+'):
+                    st.write("🔍 분석 중:", line)
                     if any(keyword in line for keyword in ["장소명", "- ", "* "]):  # 다양한 형식 대응
                         parts = line.split(":")
                         if len(parts) > 1:
                             place = parts[1].strip()
+                            st.write("📌 인식된 장소명:", place)
                             coord = get_coordinates_from_kakao(place)
                             if coord:
                                 locations.append((place, coord))
