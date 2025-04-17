@@ -112,7 +112,7 @@ if st.sidebar.button("✈️ 여행 일정 추천받기") or st.session_state.ge
                     st.success("감사합니다! 마음에 드셨다니 기뻐요 😊")
             with col2:
                 if st.button("🔄 다른 추천 일정 보기"):
-                    st.experimental_rerun()
+                    st.rerun()
 
         st.subheader("🖼️ 장소별 이미지 + 요약")
         for place, img in image_urls:
