@@ -33,15 +33,16 @@ with col3:
 def get_districts(city):
     url = "https://dapi.kakao.com/v2/local/search/keyword.json"
     headers = {"Authorization": f"KakaoAK {kakao_api_key}"}
-    params = {"query": city, "size": 15}
+    params = {"query": f"{city} 맛집", "size": 30}
     res = requests.get(url, headers=headers, params=params)
     districts = set()
     if res.status_code == 200:
         for doc in res.json().get("documents", []):
-            if doc.get("road_address"):
-                districts.add(doc["road_address"].get("region_3depth_name"))
-            elif doc.get("address"):
-                districts.add(doc["address"].get("region_3depth_name"))
+            addr = doc.get("road_address") or doc.get("address")
+            if addr:
+                region = addr.get("region_3depth_name")
+                if region:
+                    districts.add(region)
     return sorted(list(districts))
 
 if travel_city:
