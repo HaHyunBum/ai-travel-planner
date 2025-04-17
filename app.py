@@ -117,7 +117,6 @@ if st.sidebar.button("✈️ 여행 일정 추천받기"):
 
         st.markdown("---")
         st.subheader("📎 공유 링크 및 QR 코드")
-        share_url = st.experimental_get_query_params()
         share_str = f"https://{st.runtime.scriptrunner.script_run_context().script_name}?city={travel_city}&date={travel_date}&days={trip_days}&with={companion}"
         qr = qrcode.make(share_str)
         buf = BytesIO()
@@ -135,7 +134,8 @@ if st.sidebar.button("✈️ 여행 일정 추천받기"):
         for sec in sections:
             pdf.cell(200, 10, txt=f"{sec}: {user_inputs[sec]}", ln=True)
         pdf_output = BytesIO()
-        pdf.output(pdf_output)
-        st.download_button("📄 PDF 다운로드", pdf_output.getvalue(), file_name="itinerary.pdf")
+        pdf.output(pdf_output, 'F')
+        pdf_output.seek(0)
+        st.download_button("📄 PDF 다운로드", data=pdf_output, file_name="itinerary.pdf")
 
         st.success("✅ 모든 기능이 반영되었습니다!")
