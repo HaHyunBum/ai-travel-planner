@@ -17,6 +17,7 @@ st.markdown("여행 조건을 입력하면, AI가 하루치 여행 일정을 짜
 st.sidebar.header("📌 여행 조건 입력")
 travel_city = st.sidebar.text_input("여행 도시는?", "서울")
 travel_date = st.sidebar.date_input("여행 날짜는?", datetime.date.today())
+trip_days = st.sidebar.slider("여행 일수는?", 1, 5, 1)
 companion = st.sidebar.selectbox("동행 유형은?", ["혼자", "커플", "가족", "친구"])
 vibe = st.sidebar.multiselect("여행 분위기?", ["힐링", "핫플", "감성", "자연", "가성비"])
 food = st.sidebar.multiselect("음식 취향은?", ["한식", "양식", "디저트", "채식", "분식"])
@@ -29,19 +30,21 @@ if st.sidebar.button("✈️ 여행 일정 추천받기"):
         prompt = f"""
         당신은 여행 일정을 추천해주는 AI 플래너입니다.
 
-        사용자의 요청 정보를 바탕으로 여행 코스를 하루치로 구성해주세요.
-        각 코스는 아침 - 점심 - 오후 카페 - 저녁 - 야경 장소의 흐름으로 구성해주세요.
+        사용자의 요청 정보를 바탕으로 여행 코스를 {trip_days}일로 구성해주세요.
+        하루당 아침 - 점심 - 오후 카페 - 저녁 - 야경 장소의 흐름으로 구성해주세요.
+
+        각 장소는 다음 형식으로 구성해주세요:
+        장소명 - 한 줄 설명 (이유나 명소 특징) - 사용자 후기 요약
 
         🧾 사용자 입력
         - 여행 도시: {travel_city}
-        - 여행 날짜: {travel_date.strftime('%Y-%m-%d')}
+        - 여행 날짜: {travel_date.strftime('%Y-%m-%d')}부터 {trip_days}일간
         - 동행 유형: {companion}
         - 여행 분위기: {', '.join(vibe)}
         - 음식 취향: {', '.join(food)}
         - 예산: {budget}
 
         일정은 이동 동선이 자연스럽게 연결되도록 구성해주세요.
-        각 장소에 대한 간단한 설명도 덧붙여주세요.
         """
 
         response = client.chat.completions.create(
@@ -51,7 +54,7 @@ if st.sidebar.button("✈️ 여행 일정 추천받기"):
                 {"role": "user", "content": prompt}
             ],
             temperature=0.7,
-            max_tokens=1200
+            max_tokens=1800
         )
 
         result = response.choices[0].message.content
@@ -61,7 +64,7 @@ if st.sidebar.button("✈️ 여행 일정 추천받기"):
             places = []
             for line in lines:
                 if '-' in line:
-                    place = line.split('-')[-1].strip()
+                    place = line.split('-')[0].strip()
                     if place and len(place) > 2:
                         places.append(place)
             return places
@@ -89,12 +92,13 @@ if st.sidebar.button("✈️ 여행 일정 추천받기"):
         st.subheader("🗓️ AI가 추천한 여행 일정")
         st.text(result)
 
-        st.subheader("🖼️ 장소별 이미지")
+        st.subheader("🖼️ 장소별 이미지 + 요약")
         for place, img in image_urls:
             st.markdown(f"**{place}**")
             st.image(img)
+            st.markdown(f"[📍 {place} 지도에서 보기](https://www.google.com/maps/search/{place.replace(' ', '+')})")
 
-        st.subheader("🗺️ Google Maps 링크")
+        st.subheader("🗺️ 전체 Google Maps 링크")
         st.text("\n".join(map_links))
 
         # ✅ 텍스트 다운로드
