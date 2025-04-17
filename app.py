@@ -6,6 +6,7 @@ import datetime
 # ✅ OpenAI 키를 환경변수에서 가져오기
 openai.api_key = os.getenv("OPENAI_API_KEY")
 client = openai.OpenAI(api_key=openai.api_key)
+GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 
 # ✅ 페이지 기본 설정
 st.set_page_config(page_title="AI 여행 플래너", page_icon="🌍")
@@ -40,6 +41,7 @@ if st.sidebar.button("✈️ 여행 일정 추천받기"):
         - 예산: {budget}
 
         일정은 이동 동선이 자연스럽게 연결되도록 구성해주세요.
+        각 장소에 대한 간단한 설명도 덧붙여주세요.
         """
 
         response = client.chat.completions.create(
@@ -49,7 +51,7 @@ if st.sidebar.button("✈️ 여행 일정 추천받기"):
                 {"role": "user", "content": prompt}
             ],
             temperature=0.7,
-            max_tokens=1000
+            max_tokens=1200
         )
 
         result = response.choices[0].message.content
@@ -71,12 +73,26 @@ if st.sidebar.button("✈️ 여행 일정 추천받기"):
                 links.append(f"📍 {place}: {url}")
             return links
 
+        def generate_image_urls(places):
+            image_urls = []
+            for place in places:
+                query = place + " 관광지"
+                fallback = f"https://source.unsplash.com/600x400/?{query.replace(' ', '+')}"
+                image_urls.append((place, fallback))
+            return image_urls
+
         places = extract_place_names(result)
         map_links = generate_google_map_links(places)
+        image_urls = generate_image_urls(places)
 
         # ✅ 결과 출력
         st.subheader("🗓️ AI가 추천한 여행 일정")
         st.text(result)
+
+        st.subheader("🖼️ 장소별 이미지")
+        for place, img in image_urls:
+            st.markdown(f"**{place}**")
+            st.image(img)
 
         st.subheader("🗺️ Google Maps 링크")
         st.text("\n".join(map_links))
