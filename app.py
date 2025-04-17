@@ -9,6 +9,7 @@ import json
 import qrcode
 from io import BytesIO
 from fpdf import FPDF
+from urllib.parse import urlencode
 
 # 전역 설정
 openai.api_key = os.getenv("OPENAI_API_KEY")
@@ -39,6 +40,7 @@ def make_qr_code(link):
     qr = qrcode.make(link)
     buf = BytesIO()
     qr.save(buf)
+    buf.seek(0)
     return buf
 
 def generate_pdf(sections, user_inputs):
@@ -55,7 +57,7 @@ def generate_pdf(sections, user_inputs):
     output = BytesIO()
     pdf.output(output, 'F')
     output.seek(0)
-    return output
+    return output.read()
 
 # UI 시작
 st.set_page_config(page_title="AI 여행 플래너", page_icon="🌍")
@@ -83,15 +85,19 @@ if st.sidebar.button("✈️ 여행 일정 추천받기"):
     try:
         with st.spinner("AI가 여행 일정을 생성 중입니다..."):
             prompt = generate_prompt(travel_city, travel_date, trip_days, companion, vibe, food, budget)
-            response = client.chat.completions.create(
-                model="gpt-3.5-turbo",
-                messages=[
-                    {"role": "system", "content": "당신은 여행 코디네이터입니다."},
-                    {"role": "user", "content": prompt}
-                ],
-                temperature=0.7,
-                max_tokens=1200
-            )
+            try:
+                response = client.chat.completions.create(
+                    model="gpt-3.5-turbo",
+                    messages=[
+                        {"role": "system", "content": "당신은 여행 코디네이터입니다."},
+                        {"role": "user", "content": prompt}
+                    ],
+                    temperature=0.7,
+                    max_tokens=1200
+                )
+            except openai.OpenAIError as e:
+                st.error("OpenAI 응답 중 오류가 발생했습니다: " + str(e))
+                st.stop()
 
             schedule_text = response.choices[0].message.content
             st.subheader("🗓️ AI가 추천한 여행 일정")
@@ -106,13 +112,13 @@ if st.sidebar.button("✈️ 여행 일정 추천받기"):
             st.subheader("🖼️ 장소별 이미지 불러오기")
             for sec in sections:
                 query = f"{user_inputs[sec]} {travel_city}"
-                st.image(f"https://source.unsplash.com/featured/?{urllib.parse.quote(query)}", caption=f"{sec}: {user_inputs[sec]}", use_column_width=True)
+                st.image(f"https://source.unsplash.com/featured/?{urllib.parse.quote(query)}", caption=f"{sec}: {user_inputs[sec]}", use_container_width=True)
 
             st.markdown("---")
             st.subheader("🗺️ Google Static Maps로 위치 시각화")
             for sec in sections:
                 map_url = f"https://maps.googleapis.com/maps/api/staticmap?center={urllib.parse.quote(user_inputs[sec])}&zoom=15&size=600x300&markers=color:red%7C{urllib.parse.quote(user_inputs[sec])}&key={GOOGLE_API_KEY}"
-                st.image(map_url, caption=f"{sec} 위치", use_column_width=True)
+                st.image(map_url, caption=f"{sec} 위치", use_container_width=True)
 
             st.markdown("---")
             st.subheader("🧭 거리 기반 동선 최적화")
@@ -120,10 +126,13 @@ if st.sidebar.button("✈️ 여행 일정 추천받기"):
             if matrix_data:
                 st.success("(시뮬레이션용 결과) 거리 기반 재정렬:")
                 rows = matrix_data['rows']
-                distances = [rows[0]['elements'][i]['distance']['value'] if 'distance' in rows[0]['elements'][i] else float('inf') for i in range(len(rows[0]['elements']))]
-                reordered = [place for _, place in sorted(zip(distances, user_inputs.values()), key=lambda x: x[0])]
-                for i, p in enumerate(reordered, 1):
-                    st.write(f"{i}. {p}")
+                if not rows or not rows[0]['elements']:
+                    st.warning("거리 데이터가 부족해 최적화에 실패했습니다.")
+                else:
+                    distances = [rows[0]['elements'][i]['distance']['value'] if 'distance' in rows[0]['elements'][i] else float('inf') for i in range(len(rows[0]['elements']))]
+                    reordered = [place for _, place in sorted(zip(distances, user_inputs.values()), key=lambda x: x[0])]
+                    for i, p in enumerate(reordered, 1):
+                        st.write(f"{i}. {p}")
 
             st.markdown("---")
             st.subheader("🗓️ 일정 시간대 시각화")
@@ -145,7 +154,8 @@ if st.sidebar.button("✈️ 여행 일정 추천받기"):
 
             st.markdown("---")
             st.subheader("📎 공유 링크 및 QR 코드")
-            share_str = f"https://{st.request.url.split('?')[0]}?city={travel_city}&date={travel_date}&days={trip_days}&with={companion}"
+            params = urlencode({"city": travel_city, "date": travel_date, "days": trip_days, "with": companion})
+            share_str = f"https://{st.request.url.split('?')[0]}?{params}"
             qr_buf = make_qr_code(share_str)
             st.image(qr_buf.getvalue(), caption="QR 코드로 공유하기")
             st.markdown(f"🔗 [공유 링크 바로가기]({share_str})")
