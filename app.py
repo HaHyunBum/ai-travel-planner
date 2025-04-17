@@ -129,7 +129,8 @@ if st.sidebar.button("✈️ 여행 일정 추천받기"):
         st.subheader("🖨️ PDF로 일정 저장하기")
         pdf = FPDF()
         pdf.add_page()
-        pdf.set_font("Arial", size=12)
+        pdf.add_font('NanumGothic', '', 'NanumGothic.ttf', uni=True)
+        pdf.set_font("NanumGothic", size=12)
         pdf.cell(200, 10, txt="AI 여행 일정 추천기", ln=True, align="C")
         for sec in sections:
             pdf.cell(200, 10, txt=f"{sec}: {user_inputs[sec]}", ln=True)
