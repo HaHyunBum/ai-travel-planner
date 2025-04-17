@@ -14,7 +14,7 @@ st.set_page_config(page_title="AI 여행 플래너", page_icon="🌍")
 st.title("🌍 AI 여행 일정 추천기")
 
 # ✅ 공유 링크 파라미터 로딩
-query_params = st.experimental_get_query_params()
+query_params = st.query_params
 travel_city = query_params.get("city", ["서울"])[0]
 travel_date = datetime.date.fromisoformat(query_params.get("date", [str(datetime.date.today())])[0])
 trip_days = int(query_params.get("days", ["1"])[0])
