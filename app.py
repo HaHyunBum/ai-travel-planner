@@ -175,7 +175,6 @@ if st.button("✈️ AI에게 추천받기"):
         popup=icon_emoji + name,
         icon=folium.Icon(color=icon_color)
     ).add_to(m)
-    ).add_to(m)
                     folium.PolyLine([coord for _, coord in locations], color="blue").add_to(m)
                     st_folium(m, width=700)
         except Exception as e:
