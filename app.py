@@ -59,9 +59,15 @@ pets = st.sidebar.checkbox("반려동물 동반")
 people = f"성인 {adult}, 어린이 {kids}, 유아 {babies}, 반려동물 {'있음' if pets else '없음'}"
 
 companion = st.sidebar.selectbox("동행 유형은?", ["혼자", "커플", "가족", "친구"], index=["혼자", "커플", "가족", "친구"].index(companion))
-vibe = st.sidebar.multiselect("여행 분위기?", ["힐링", "핫플", "감성", "자연", "가성비", "로맨틱", "모험", "역사", "맛집", "휴양", "문화", "레저"], default=vibe)
-food = st.sidebar.multiselect("음식 취향은?", ["한식", "양식", "디저트", "채식", "분식", "일식", "중식", "고기", "해산물", "패스트푸드", "아시아", "퓨전"], default=food)
-budget = st.sidebar.slider("예산은? (KRW)", 0, 100000000, int(budget), step=10000)
+
+with st.sidebar.expander("여행 분위기 선택"):
+    vibe = st.multiselect("여행 분위기?", ["힐링", "핫플", "감성", "자연", "가성비", "로맨틱", "모험", "역사", "맛집", "휴양", "문화", "레저"], default=vibe)
+
+with st.sidebar.expander("음식 취향 선택"):
+    food = st.multiselect("음식 취향은?", ["한식", "양식", "디저트", "채식", "분식", "일식", "중식", "고기", "해산물", "패스트푸드", "아시아", "퓨전"], default=food)
+
+with st.sidebar.expander("예산 설정"):
+    budget = st.slider("예산은? (KRW)", 0, 10000000, int(budget), step=1000)
 
 if st.sidebar.button("✈️ 여행 일정 추천받기"):
     try:
