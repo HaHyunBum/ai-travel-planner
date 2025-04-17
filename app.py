@@ -153,28 +153,28 @@ if st.button("✈️ AI에게 추천받기"):
                 if locations:
                     m = folium.Map(location=locations[0][1], zoom_start=13)
                     for name, (lat, lon) in locations:
-    # 장소 유형 자동 분류 + 아이콘
-    if any(keyword in name for keyword in ["호텔", "모텔", "게스트하우스", "숙소", "에어비앤비"]):
-        icon_color = "blue"
-        icon_emoji = "🏨 "
-    elif any(keyword in name for keyword in ["카페", "커피"]):
-        icon_color = "lightgray"
-        icon_emoji = "☕ "
-    elif any(keyword in name for keyword in ["식당", "맛집", "포차", "고깃집", "횟집", "분식"]):
-        icon_color = "red"
-        icon_emoji = "🍽 "
-    elif any(keyword in name for keyword in ["공원", "박물관", "전시관", "시장", "마을", "해변", "공연"]):
-        icon_color = "green"
-        icon_emoji = "📍 "
-    else:
-        icon_color = "orange"
-        icon_emoji = "📌 "
+                        # 장소 유형 자동 분류 + 아이콘
+                        if any(keyword in name for keyword in ["호텔", "모텔", "게스트하우스", "숙소", "에어비앤비"]):
+                            icon_color = "blue"
+                            icon_emoji = "🏨 "
+                        elif any(keyword in name for keyword in ["카페", "커피"]):
+                            icon_color = "lightgray"
+                            icon_emoji = "☕ "
+                        elif any(keyword in name for keyword in ["식당", "맛집", "포차", "고깃집", "횟집", "분식"]):
+                            icon_color = "red"
+                            icon_emoji = "🍽 "
+                        elif any(keyword in name for keyword in ["공원", "박물관", "전시관", "시장", "마을", "해변", "공연"]):
+                            icon_color = "green"
+                            icon_emoji = "📍 "
+                        else:
+                            icon_color = "orange"
+                            icon_emoji = "📌 "
 
-    folium.Marker(
-        location=[lat, lon],
-        popup=icon_emoji + name,
-        icon=folium.Icon(color=icon_color)
-    ).add_to(m)
+                        folium.Marker(
+                            location=[lat, lon],
+                            popup=icon_emoji + name,
+                            icon=folium.Icon(color=icon_color)
+                        ).add_to(m)
                     folium.PolyLine([coord for _, coord in locations], color="blue").add_to(m)
                     st_folium(m, width=700)
         except Exception as e:
