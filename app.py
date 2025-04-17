@@ -43,14 +43,35 @@ with st.expander("🍜 여행 분위기 / 음식 / 예산 설정"):
     budget = st.slider("예산은? (KRW)", 0, 10000000, 100000, step=1000)
 
 # AI 프롬프트 생성
-def generate_prompt(city, date, days, companion, vibe, food, budget, people):
-    return f"""
-    당신은 여행 일정을 추천해주는 AI 플래너입니다.
-    여행 도시는 '{city}'로 한정해주세요. '{city}' 외 지역은 절대 포함하지 마세요.
-    여행 일정을 {days}일로 구성해주세요.
-    아침, 점심, 카페, 저녁, 야경 순서로 각 일정마다 장소 이름과 한 줄 설명을 포함해주세요.
-    동행: {companion}, 인원 구성: {people}, 분위기: {', '.join(vibe)}, 음식: {', '.join(food)}, 예산: {budget}원
-    """
+def generate_prompt(city, date, days, companion, vibe, food, budget, people): return f""" 당신은 '{city}'를 여행하는 사람들을 위한 여행 전문가이자 블로거입니다.
+    여행 관련 정보를 수집하기 위해 네이버 블로그, 유튜브, 인스타그램 등에서 '{city} {days}일 여행 코스', '{city} 여행 맛집', '{city} 명소'를 검색한 것처럼 행동해주세요.
+
+수집된 정보들을 바탕으로 현실적인 여행 일정을 작성해 주세요. 각 일차별로 오전/오후/저녁 시간대별로 구분하고, 방문할 장소와 설명을 포함해주세요.
+
+결과는 아래 형식을 꼭 지켜주세요:
+
+📅 1일차
+**오전**
+- 장소명: 설명
+
+**오후**
+- 장소명: 설명
+
+**저녁**
+- 장소명: 설명
+
+📅 2일차 (이하 반복)
+
+조건 요약:
+- 도시: {city}
+- 날짜: {date}
+- 여행 기간: {days}일
+- 동행: {companion}, 인원: {people}
+- 분위기 키워드: {', '.join(vibe)}
+- 음식 취향: {', '.join(food)}
+- 예산: {budget}원
+"""
+
 
 # 버튼 클릭 시 실행
 if st.button("✈️ AI에게 추천받기"):
