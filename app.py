@@ -49,16 +49,17 @@ trip_days = int(query_params.get("days", ["1"])[0])
 companion = query_params.get("with", ["혼자"])[0]
 vibe = query_params.get("vibe", [])
 food = query_params.get("food", [])
-budget = query_params.get("budget", ["저렴"])[0]
+budget = query_params.get("budget", ["100000"])[0]
 
 st.sidebar.header("📌 여행 조건 입력")
 travel_city = st.sidebar.text_input("여행 도시는?", travel_city)
 travel_date = st.sidebar.date_input("여행 날짜는?", travel_date)
-trip_days = st.sidebar.slider("여행 일수는?", 1, 5, trip_days)
+trip_days_label = st.sidebar.selectbox("여행 일수는?", ["당일치기", "1박2일", "2박3일", "3박4일", "4박5일"], index=trip_days - 1)
+trip_days = int(trip_days_label[0]) if trip_days_label != "당일치기" else 1
 companion = st.sidebar.selectbox("동행 유형은?", ["혼자", "커플", "가족", "친구"], index=["혼자", "커플", "가족", "친구"].index(companion))
-vibe = st.sidebar.multiselect("여행 분위기?", ["힐링", "핫플", "감성", "자연", "가성비"], default=vibe)
-food = st.sidebar.multiselect("음식 취향은?", ["한식", "양식", "디저트", "채식", "분식"], default=food)
-budget = st.sidebar.selectbox("예산은?", ["저렴", "중간", "고급"], index=["저렴", "중간", "고급"].index(budget))
+vibe = st.sidebar.multiselect("여행 분위기?", ["힐링", "핫플", "감성", "자연", "가성비", "로맨틱", "모험", "역사", "맛집", "휴양"], default=vibe)
+food = st.sidebar.multiselect("음식 취향은?", ["한식", "양식", "디저트", "채식", "분식", "일식", "중식", "고기", "해산물", "패스트푸드"], default=food)
+budget = st.sidebar.slider("예산은? (KRW)", 0, 100000000, int(budget), step=10000)
 
 if st.sidebar.button("✈️ 여행 일정 추천받기"):
     try:
