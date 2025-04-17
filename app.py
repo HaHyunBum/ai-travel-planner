@@ -70,7 +70,7 @@ if st.button("✈️ AI에게 추천받기"):
     with st.spinner("AI가 취향 기반 맞춤 일정을 생성 중입니다..."):
         try:
             prompt = generate_prompt(travel_city, travel_date, trip_days, companion, vibe, food, budget, people)
-            response = openai.ChatCompletion.create(
+            response = openai.chat.completions.create(
                 model="gpt-4",
                 messages=[
                     {"role": "system", "content": "당신은 여행 일정 전문가입니다. 사용자의 조건을 바탕으로 현실적인 여행 계획을 작성하세요."},
