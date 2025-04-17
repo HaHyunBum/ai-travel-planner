@@ -47,7 +47,12 @@ def get_districts(city):
 
 if travel_city:
     st.markdown("### 📍 여행 지역 세부 선택")
-    district_list = get_districts(travel_city)
+    manual_districts = {
+    "서울": ["홍익동", "망원동", "성수동", "잠실동", "이태원동", "연남동", "합정동", "한남동"],
+    "인천": ["송도동", "을왕동", "연안동", "중구", "영종동", "동춘동", "주안동"]
+}
+district_list = manual_districts.get(travel_city, get_districts(travel_city))
+
     selected_district = st.selectbox("세부 지역(동/면/읍)을 선택하세요", district_list) if district_list else ""
 else:
     selected_district = ""
