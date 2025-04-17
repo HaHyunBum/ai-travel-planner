@@ -4,3 +4,5 @@ requests
 plotly
 qrcode
 fpdf
+folium
+streamlit-folium
