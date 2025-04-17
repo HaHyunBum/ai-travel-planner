@@ -23,8 +23,12 @@ vibe = st.sidebar.multiselect("여행 분위기?", ["힐링", "핫플", "감성"
 food = st.sidebar.multiselect("음식 취향은?", ["한식", "양식", "디저트", "채식", "분식"])
 budget = st.sidebar.selectbox("예산은?", ["저렴", "중간", "고급"])
 
-# ✅ 버튼 클릭 시 GPT 호출
-if st.sidebar.button("✈️ 여행 일정 추천받기"):
+# ✅ 다시 생성 버튼 구현
+if "generate_count" not in st.session_state:
+    st.session_state.generate_count = 0
+
+if st.sidebar.button("✈️ 여행 일정 추천받기") or st.session_state.generate_count > 0:
+    st.session_state.generate_count += 1
     with st.spinner("AI가 여행 일정을 생성 중입니다..."):
 
         prompt = f"""
@@ -45,6 +49,7 @@ if st.sidebar.button("✈️ 여행 일정 추천받기"):
         - 예산: {budget}
 
         일정은 이동 동선이 자연스럽게 연결되도록 구성해주세요.
+        출력 형식은 각 날짜별로 구분되도록 해주세요 (예: Day 1, Day 2...) 
         """
 
         response = client.chat.completions.create(
@@ -91,12 +96,14 @@ if st.sidebar.button("✈️ 여행 일정 추천받기"):
         # ✅ 결과 출력
         st.subheader("🗓️ AI가 추천한 여행 일정")
 
-        day_blocks = result.split("\n\n")
+        import re
+        day_blocks = re.split(r"(?=Day [0-9]+)", result)
         for block in day_blocks:
             if block.strip():
-                st.markdown(f"```
+                with st.expander(block.split('\n')[0].strip()):
+                    st.markdown(f"```
 {block.strip()}
-```")
+```)  ")
 
         st.subheader("🖼️ 장소별 이미지 + 요약")
         for place, img in image_urls:
@@ -115,3 +122,14 @@ if st.sidebar.button("✈️ 여행 일정 추천받기"):
             file_name=f"{travel_city}_{travel_date}_여행일정.txt",
             mime="text/plain"
         )
+
+        # ✅ 사용자 피드백
+        st.markdown("---")
+        st.markdown("### 😊 이 일정이 마음에 드시나요?")
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button("👍 마음에 들어요!"):
+                st.success("감사합니다! 마음에 드셨다니 기뻐요 😊")
+        with col2:
+            if st.button("🔁 다시 생성하기"):
+                st.experimental_rerun()
