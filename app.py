@@ -2,9 +2,14 @@ import streamlit as st
 import openai
 import os
 import datetime
+import urllib.parse
+import folium
+from streamlit_folium import st_folium
+import requests
 
 # API 키 설정 (환경변수 또는 secrets.toml 이용)
 openai.api_key = os.getenv("OPENAI_API_KEY") or st.secrets["OPENAI_API_KEY"]
+kakao_api_key = os.getenv("KAKAO_API_KEY") or st.secrets["KAKAO_API_KEY"]
 
 # 기본 페이지 설정
 st.set_page_config(page_title="AI 여행 플래너", page_icon="🌍", layout="wide")
@@ -55,6 +60,8 @@ def generate_prompt(city, date, days, companion, vibe, food, budget, people):
 - 예상 비용 (인당 또는 전체)
 - 출처 (네이버 블로그, 인스타그램, 유튜브 등)
 
+각 장소명 끝에 '지도: 네이버 지도 검색 링크'를 추가해 주세요. 예: 지도: https://map.naver.com/v5/search/장소명
+
 조건 요약:
 - 도시: {city}
 - 날짜: {date}
@@ -64,6 +71,20 @@ def generate_prompt(city, date, days, companion, vibe, food, budget, people):
 - 음식 취향: {', '.join(food)}
 - 총 예산: {budget:,}원 이내에서 해결
 """
+
+# 카카오 API로 장소명 → 좌표 변환 함수
+def get_coordinates_from_kakao(place_name):
+    url = "https://dapi.kakao.com/v2/local/search/keyword.json"
+    headers = {"Authorization": f"KakaoAK {kakao_api_key}"}
+    params = {"query": place_name}
+    try:
+        res = requests.get(url, headers=headers, params=params)
+        if res.status_code == 200 and res.json()['documents']:
+            doc = res.json()['documents'][0]
+            return float(doc['y']), float(doc['x'])  # 위도, 경도
+    except:
+        return None
+    return None
 
 # 버튼 클릭 시 실행
 if st.button("✈️ AI에게 추천받기"):
@@ -83,5 +104,21 @@ if st.button("✈️ AI에게 추천받기"):
             st.success("✅ AI 추천 일정 생성 완료!")
             st.markdown("### 예시 📍")
             st.markdown(result)
+
+            with st.expander("🗺️ 전체 경로 지도 보기", expanded=False):
+                st.info("카카오 API를 활용해 장소를 지도에 자동 표시합니다.")
+                locations = []
+                for line in result.split('\n'):
+                    if line.startswith("- 장소명:"):
+                        place = line.split(":")[1].strip()
+                        coord = get_coordinates_from_kakao(place)
+                        if coord:
+                            locations.append((place, coord))
+                if locations:
+                    m = folium.Map(location=locations[0][1], zoom_start=13)
+                    for name, (lat, lon) in locations:
+                        folium.Marker(location=[lat, lon], popup=name).add_to(m)
+                    folium.PolyLine([coord for _, coord in locations], color="blue").add_to(m)
+                    st_folium(m, width=700)
         except Exception as e:
             st.error(f"⚠️ 오류 발생: {str(e)}")
