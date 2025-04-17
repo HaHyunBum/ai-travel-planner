@@ -142,8 +142,7 @@ if st.button("✈️ AI에게 추천받기"):
             st.markdown(result)
 
             # 네이버 지도 링크 강조
-            st.markdown("
-### 🗺️ 네이버 지도로 장소 검색하기")
+            st.markdown("### 🗺️ 네이버 지도로 장소 검색하기")
             for line in result.split('
 '):
                 if any(keyword in line for keyword in ["장소명", "- ", "* "]):
