@@ -2,3 +2,5 @@ streamlit
 openai
 requests
 plotly
+qrcode
+fpdf
