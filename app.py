@@ -53,7 +53,6 @@ if st.sidebar.button("✈️ 여행 일정 추천받기"):
         st.subheader("🗓️ AI가 추천한 여행 일정")
         st.markdown(schedule_text)
 
-        # 장소 추출 및 사용자 직접 수정 UI
         st.markdown("---")
         st.subheader("✏️ 일정 수정하기")
         sections = ["아침", "점심", "카페", "저녁", "야경"]
@@ -61,7 +60,6 @@ if st.sidebar.button("✈️ 여행 일정 추천받기"):
         for sec in sections:
             user_inputs[sec] = st.text_input(f"{sec} 장소 입력", value=f"{travel_city} 대표 {sec} 장소")
 
-        # 거리 기반 정렬 (Distance Matrix)
         st.markdown("---")
         st.subheader("🧭 거리 기반 동선 최적화")
         if GOOGLE_API_KEY:
@@ -69,13 +67,11 @@ if st.sidebar.button("✈️ 여행 일정 추천받기"):
             distance_url = f"https://maps.googleapis.com/maps/api/distancematrix/json?origins={'|'.join(places)}&destinations={'|'.join(places)}&key={GOOGLE_API_KEY}"
             r = requests.get(distance_url)
             if r.status_code == 200:
-                data = r.json()
-                st.text("(시뮬레이션용 결과) 거리 기반 재정렬:")
+                st.success("(시뮬레이션용 결과) 거리 기반 재정렬:")
                 reordered = sorted(places)
                 for i, p in enumerate(reordered, 1):
                     st.write(f"{i}. {p}")
 
-        # 캘린더 시각화
         st.markdown("---")
         st.subheader("🗓️ 일정 시간대 시각화")
         fig = go.Figure()
@@ -91,5 +87,4 @@ if st.sidebar.button("✈️ 여행 일정 추천받기"):
         fig.update_layout(barmode='stack', height=300, showlegend=True)
         st.plotly_chart(fig, use_container_width=True)
 
-        st.markdown("---")
         st.success("✅ 모든 기능이 반영되었습니다!")
