@@ -3,9 +3,8 @@ import openai
 import os
 import datetime
 
-# 환경 변수로부터 API 키 설정
-openai.api_key = os.getenv("OPENAI_API_KEY")
-client = openai.OpenAI(api_key=openai.api_key)
+# API 키 설정 (환경변수 또는 secrets.toml 이용)
+openai.api_key = os.getenv("OPENAI_API_KEY") or st.secrets["OPENAI_API_KEY"]
 
 # 기본 페이지 설정
 st.set_page_config(page_title="AI 여행 플래너", page_icon="🌍", layout="wide")
@@ -13,6 +12,7 @@ st.markdown("<h1>🌍 여행지를 알려주세요</h1>", unsafe_allow_html=True
 st.markdown("AI가 자동으로 여행 코스를 추천해드립니다")
 
 # 여행 조건 입력
+st.header("여행 정보를 입력하세요")
 col1, col2, col3 = st.columns([2, 1, 1])
 with col1:
     travel_city = st.text_input("여행 도시는 어디인가요?", "서울")
@@ -42,17 +42,18 @@ with st.expander("🍜 여행 분위기 / 음식 / 예산 설정"):
     food = st.multiselect("음식 취향은?", ["한식", "양식", "디저트", "채식", "분식", "일식", "중식", "고기", "해산물", "패스트푸드", "아시아", "퓨전"], default=[])
     budget = st.slider("예산은? (KRW)", 0, 10000000, 100000, step=1000)
 
-# AI 프롬프트 생성
+# AI 프롬프트 생성 함수
 def generate_prompt(city, date, days, companion, vibe, food, budget, people):
     return f"""
 당신은 {city}에 대해 인스타그램, 네이버 블로그, 유튜브를 참고해 여행 코스를 제안해주는 여행 코디네이터입니다.
 
-{days}일 간의 여행 일정으로 오전 / 오후 / 저녁으로 나누어 추천해 주세요.
-
-각 장소는 다음과 같은 형식을 따라야 합니다:
+{days}일 간의 여행 일정으로 오전 / 점심 / 오후 / 저녁 / 숙소 순으로 시간대별 일정을 구성해 주세요.
+각 장소에 대해:
 - 장소명
 - 간단한 설명
-- (출처: 네이버 블로그 or Wikipedia or 유튜브)
+- 추천 이유 (핫한지, 감성적인지 등)
+- 예상 비용 (인당 또는 전체)
+- 출처 (네이버 블로그, 인스타그램, 유튜브 등)
 
 조건 요약:
 - 도시: {city}
@@ -61,7 +62,7 @@ def generate_prompt(city, date, days, companion, vibe, food, budget, people):
 - 동행: {companion}, 인원: {people}
 - 분위기 키워드: {', '.join(vibe)}
 - 음식 취향: {', '.join(food)}
-- 예산: {budget}원
+- 총 예산: {budget:,}원 이내에서 해결
 """
 
 # 버튼 클릭 시 실행
@@ -69,14 +70,14 @@ if st.button("✈️ AI에게 추천받기"):
     with st.spinner("AI가 취향 기반 맞춤 일정을 생성 중입니다..."):
         try:
             prompt = generate_prompt(travel_city, travel_date, trip_days, companion, vibe, food, budget, people)
-            response = client.chat.completions.create(
-                model="gpt-3.5-turbo",
+            response = openai.ChatCompletion.create(
+                model="gpt-4",
                 messages=[
-                    {"role": "system", "content": "당신은 여행 코디네이터입니다."},
+                    {"role": "system", "content": "당신은 여행 일정 전문가입니다. 사용자의 조건을 바탕으로 현실적인 여행 계획을 작성하세요."},
                     {"role": "user", "content": prompt}
                 ],
                 temperature=0.7,
-                max_tokens=1500
+                max_tokens=1800
             )
             result = response.choices[0].message.content
             st.success("✅ AI 추천 일정 생성 완료!")
