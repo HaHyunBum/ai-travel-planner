@@ -41,7 +41,11 @@ if st.sidebar.button("✈️ 여행 일정 추천받기"):
         일정은 이동 동선이 자연스럽게 연결되도록 구성해주세요.
         """
 
-        response = openai.ChatCompletion.create(
+        from openai import OpenAI
+client = OpenAI(api_key=openai.api_key)
+
+response = client.chat.completions.create(
+
             model="gpt-3.5-turbo",
             messages=[
                 {"role": "system", "content": "당신은 여행 일정을 짜주는 전문가입니다."},
