@@ -145,8 +145,7 @@ if st.button("✈️ AI에게 추천받기"):
             with st.expander("🗺️ 전체 경로 지도 보기", expanded=False):
                 st.info("카카오 API를 활용해 장소를 지도에 자동 표시합니다.")
                 locations = []
-                for line in result.split('
-'):
+                for line in result.split('\n'):
                     st.write("🔍 분석 중:", line)
                     if any(keyword in line for keyword in ["장소명", "- ", "* "]):  # 다양한 형식 대응
                         parts = line.split(":")
