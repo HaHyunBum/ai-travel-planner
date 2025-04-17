@@ -29,6 +29,28 @@ with col3:
     trip_days_label = st.selectbox("여행 일수는?", ["당일치기", "1박2일", "2박3일", "3박4일", "4박5일"])
     trip_days = int(trip_days_label[0]) if trip_days_label != "당일치기" else 1
 
+# 행정동 선택 (카카오 API 이용)
+def get_districts(city):
+    url = "https://dapi.kakao.com/v2/local/search/keyword.json"
+    headers = {"Authorization": f"KakaoAK {kakao_api_key}"}
+    params = {"query": city, "size": 15}
+    res = requests.get(url, headers=headers, params=params)
+    districts = set()
+    if res.status_code == 200:
+        for doc in res.json().get("documents", []):
+            if doc.get("road_address"):
+                districts.add(doc["road_address"].get("region_3depth_name"))
+            elif doc.get("address"):
+                districts.add(doc["address"].get("region_3depth_name"))
+    return sorted(list(districts))
+
+if travel_city:
+    st.markdown("### 📍 여행 지역 세부 선택")
+    district_list = get_districts(travel_city)
+    selected_district = st.selectbox("세부 지역(동/면/읍)을 선택하세요", district_list) if district_list else ""
+else:
+    selected_district = ""
+
 # 동행 인원 구성
 st.markdown("## 👥 동행 인원 구성")
 cols = st.columns(4)
@@ -48,9 +70,9 @@ with st.expander("🍜 여행 분위기 / 음식 / 예산 설정"):
     budget = st.slider("예산은? (KRW)", 0, 10000000, 100000, step=1000)
 
 # AI 프롬프트 생성 함수
-def generate_prompt(city, date, days, companion, vibe, food, budget, people):
+def generate_prompt(city, district, date, days, companion, vibe, food, budget, people):
     return f"""
-당신은 {city}에 대해 인스타그램, 네이버 블로그, 유튜브를 참고해 여행 코스를 제안해주는 여행 코디네이터입니다.
+당신은 {city} {district}에 대해 인스타그램, 네이버 블로그, 유튜브를 참고해 여행 코스를 제안해주는 여행 코디네이터입니다.
 
 {days}일 간의 여행 일정으로 오전 / 점심 / 오후 / 저녁 / 숙소 순으로 시간대별 일정을 구성해 주세요.
 각 장소에 대해:
@@ -63,7 +85,7 @@ def generate_prompt(city, date, days, companion, vibe, food, budget, people):
 각 장소명 끝에 '지도: 네이버 지도 검색 링크'를 추가해 주세요. 예: 지도: https://map.naver.com/v5/search/장소명
 
 조건 요약:
-- 도시: {city}
+- 지역: {city} {district}
 - 날짜: {date}
 - 여행 기간: {days}일
 - 동행: {companion}, 인원: {people}
@@ -90,7 +112,7 @@ def get_coordinates_from_kakao(place_name):
 if st.button("✈️ AI에게 추천받기"):
     with st.spinner("AI가 취향 기반 맞춤 일정을 생성 중입니다..."):
         try:
-            prompt = generate_prompt(travel_city, travel_date, trip_days, companion, vibe, food, budget, people)
+            prompt = generate_prompt(travel_city, selected_district, travel_date, trip_days, companion, vibe, food, budget, people)
             response = openai.chat.completions.create(
                 model="gpt-4",
                 messages=[
