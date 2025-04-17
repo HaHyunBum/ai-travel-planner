@@ -47,8 +47,9 @@ budget = query_params.get("budget", ["100000"])[0]
 col1, col2, col3 = st.columns([2, 1, 1])
 
 with col1:
-    travel_city = st.text_input("여행 도시는 어디인가요? (예: 서울, 부산, 제주 등)", travel_city)
-    st.caption("\n\n추천 여행지: 서울, 부산, 제주, 강릉, 전주 등")
+    travel_city = st.text_input("여행 도시는 어디인가요?", travel_city)
+    if travel_city == "서울":
+        st.caption("🔍 추천 여행지: 부산(해변), 강릉(자연), 전주(감성), 여수(야경)")
 
 with col2:
     travel_date = st.date_input("여행 날짜는 언제인가요?", travel_date)
