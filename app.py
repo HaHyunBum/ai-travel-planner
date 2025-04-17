@@ -90,7 +90,13 @@ if st.sidebar.button("✈️ 여행 일정 추천받기"):
 
         # ✅ 결과 출력
         st.subheader("🗓️ AI가 추천한 여행 일정")
-        st.text(result)
+
+        day_blocks = result.split("\n\n")
+        for block in day_blocks:
+            if block.strip():
+                st.markdown(f"```
+{block.strip()}
+```")
 
         st.subheader("🖼️ 장소별 이미지 + 요약")
         for place, img in image_urls:
