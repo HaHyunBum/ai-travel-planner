@@ -43,7 +43,7 @@ with st.expander("🍜 여행 분위기 / 음식 / 예산 설정"):
     budget = st.slider("예산은? (KRW)", 0, 10000000, 100000, step=1000)
 
 # AI 프롬프트 생성
- def generate_prompt(city, date, days, companion, vibe, food, budget, people):
+def generate_prompt(city, date, days, companion, vibe, food, budget, people):
     return f"""
 당신은 {city}에 대해 인스타그램, 네이버 블로그, 유튜브를 참고해 여행 코스를 제안해주는 여행 코디네이터입니다.
 
