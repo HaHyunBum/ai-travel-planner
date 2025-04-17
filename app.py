@@ -3,8 +3,6 @@ import openai
 import os
 import datetime
 import urllib.parse
-import folium
-from streamlit_folium import st_folium
 import requests
 
 # API 키 설정 (환경변수 또는 secrets.toml 이용)
@@ -108,18 +106,6 @@ def generate_prompt(city, district, date, days, companion, vibe, food, budget, p
 - 총 예산: {budget:,}원 이내에서 해결
 """
 
-# 카카오 API로 장소명 → 좌표 변환 함수
-def get_coordinates_from_kakao(place_name):
-    url = "https://dapi.kakao.com/v2/local/search/keyword.json"
-    headers = {"Authorization": f"KakaoAK {kakao_api_key}"}
-    params = {"query": place_name}
-    try:
-        res = requests.get(url, headers=headers, params=params)
-        if res.status_code == 200 and res.json()['documents']:
-            doc = res.json()['documents'][0]
-            return float(doc['y']), float(doc['x'])  # 위도, 경도
-    except:
-        return None
     return None
 
 # 버튼 클릭 시 실행
